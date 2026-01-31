@@ -1,5 +1,5 @@
 {
-  "homepage": "https://[your-github-username].github.io/farm-bridge",
+  "homepage": "https://[RAMANABOYANA-UK].github.io/farm-bridge",
   "name": "farm-bridge-frontend",
   "version": "1.0.0",
   "private": true,
@@ -43,4 +43,5 @@
       "last 1 safari version"
     ]
   }
+
 }
