@@ -1,7 +1,7 @@
 {
-  "homepage": "https://[RAMANABOYANA-UK].github.io/farm-bridge",
   "name": "farm-bridge-frontend",
   "version": "1.0.0",
+  "homepage": "https://[RAMANABOYANA-UK].github.io/farm-bridge",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",
@@ -45,3 +45,4 @@
   }
 
 }
+
