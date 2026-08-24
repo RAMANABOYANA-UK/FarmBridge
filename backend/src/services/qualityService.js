@@ -1,56 +1,49 @@
-// services/qualityService.js
-// Calls the standalone CNN Quality Grading microservice (ml-quality) on port 8001.
-// If the ML service is unavailable, it falls back to a deterministic mock grade so
-// that product creation/regrade never breaks the core flow.
+const axios = require('axios');
+const path = require('path');
+const fs = require('fs');
 
-const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:8001';
-const TIMEOUT_MS = 10000;
+const QUALITY_API = process.env.QUALITY_API_URL || 'http://localhost:8001';
 
-// Resolve a stored /uploads/... URL into a local filesystem path under backend/uploads
-const resolveLocalPath = (imagePath) => {
-  const base = __dirname + '/../..'; // -> backend/
-  const clean = imagePath.replace(/^\/uploads\//, '/uploads/');
-  return (base + clean).replace(/\\/g, '/');
-};
-
-// Deterministic fallback used when the CNN service is offline
-const mockGrade = () => {
-  return {
-    grade: 'standard',
-    confidence: 0.62,
-    defects: [],
-    source: 'mock' // indicates the mock was used
-  };
-};
-
-// gradeProduct(imagePaths) -> calls CNN service; falls back to mock on failure
-const gradeProduct = async (imagePaths) => {
-  const paths = (imagePaths || []).map(resolveLocalPath);
-
+// gradeProduct(imagePaths) -> calls the CNN service /grade-from-paths endpoint.
+// Falls back to an 'ungraded' result on failure so the core flow never breaks.
+const gradeProduct = async (imagePaths = []) => {
   try {
-    const response = await fetch(`${ML_SERVICE_URL}/grade`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ images: paths }),
-      signal: AbortSignal.timeout(TIMEOUT_MS)
+    // Convert relative paths to absolute paths
+    const absolutePaths = imagePaths.map((img) => {
+      if (img.startsWith('/uploads')) {
+        return path.join(__dirname, '../../', img);
+      }
+      return img;
     });
 
-    if (!response.ok) {
-      throw new Error(`ML service responded with status ${response.status}`);
+    const existingPaths = absolutePaths.filter((p) => fs.existsSync(p));
+
+    if (existingPaths.length === 0) {
+      return {
+        grade: 'ungraded',
+        confidence: 0,
+        defects: ['No valid images found'],
+        message: 'No images available for grading'
+      };
     }
 
-    const data = await response.json();
+    const response = await axios.post(
+      `${QUALITY_API}/grade-from-paths`,
+      { image_paths: existingPaths },
+      { timeout: 20000 }
+    );
 
-    return {
-      grade: data.grade || 'ungraded',
-      confidence: typeof data.confidence === 'number' ? data.confidence : 0,
-      defects: Array.isArray(data.defects) ? data.defects : [],
-      source: 'cnn'
-    };
+    return response.data;
   } catch (error) {
-    console.log(`[qualityService] ML grading unavailable (${error.message}) - using mock grade`);
-    return mockGrade();
+    console.error('Quality grading error:', error.message);
+    return {
+      grade: 'ungraded',
+      confidence: 0,
+      defects: ['Grading service unavailable'],
+      message: 'Could not grade product at this time'
+    };
   }
 };
 
 module.exports = { gradeProduct };
+
