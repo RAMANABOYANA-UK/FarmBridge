@@ -5,6 +5,7 @@ const Order = require('../models/Order');
 const { protect, authorize } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const { createRazorpayOrder, verifyPaymentSignature } = require('../services/paymentService');
+const { sendPaymentSuccess } = require('../services/notificationService');
 
 // ====================== INITIATE ONLINE PAYMENT FOR AN ORDER ======================
 router.post(
@@ -95,6 +96,9 @@ router.post(
       }
 
       res.json({ success: true, message: 'Payment verified successfully', order });
+
+      // Fire-and-forget notification (never blocks/fails the payment flow)
+      sendPaymentSuccess(order).catch(() => {});
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }

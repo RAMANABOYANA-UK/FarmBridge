@@ -49,6 +49,10 @@ const createOrder = async ({ buyerId, farmerId, items, deliveryAddress, paymentM
     tracking: [{ status: 'pending', note: 'Order placed' }]
   });
 
+  // Fire-and-forget notification (never blocks/fails the order flow)
+  const { sendOrderPlaced } = require('./notificationService');
+  sendOrderPlaced(order).catch(() => {});
+
   return order;
 };
 
