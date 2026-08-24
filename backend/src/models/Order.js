@@ -37,6 +37,9 @@ const orderSchema = new mongoose.Schema(
         timestamp: { type: Date, default: Date.now }
       }
     ],
+    razorpayOrderId: String,
+    razorpayPaymentId: String,
+    razorpaySignature: String,
     deliveredAt: Date
   },
   { timestamps: true }

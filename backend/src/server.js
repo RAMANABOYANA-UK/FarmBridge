@@ -13,6 +13,7 @@ const orderRoutes = require('./routes/orders');
 const analyticsRoutes = require('./routes/analytics');
 const aiRoutes = require('./routes/ai');
 const userRoutes = require('./routes/users');
+const paymentRoutes = require('./routes/payments');
 const registerSocketHandlers = require('./socket');
 const errorHandler = require('./middleware/errorHandler');
 const path = require('path');
@@ -47,6 +48,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', service: 'FarmBridge Backend - Core Strengthened' });
