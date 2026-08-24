@@ -1,4 +1,7 @@
 node_modules/
 error.log
 .env
+__pycache__/
+*.pyc
+venv/
 
