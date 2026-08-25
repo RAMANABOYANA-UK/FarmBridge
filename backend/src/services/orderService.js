@@ -51,22 +51,31 @@ const createOrder = async ({ buyerId, farmerId, items, deliveryAddress, paymentM
 
   // Fire-and-forget notification (never blocks/fails the order flow)
   const { sendOrderPlaced } = require('./notificationService');
-  sendOrderPlaced(order).catch(() => {});
+  sendOrderPlaced(order).catch((err) =>
+    console.error('[OrderService] Order placed notification failed:', err.message)
+  );
 
   return order;
 };
 
-const updateOrderStatus = async (orderId, newStatus, note = '') => {
+const updateOrderStatus = async (orderId, newStatus, updatedBy = null, note = '') => {
   const order = await Order.findById(orderId);
   if (!order) throw new Error('Order not found');
 
   order.status = newStatus;
-  order.tracking.push({ status: newStatus, note });
+  order.tracking.push({ status: newStatus, note, updatedBy, timestamp: new Date() });
   if (newStatus === 'delivered') {
     order.deliveredAt = new Date();
     order.paymentStatus = order.paymentMethod === 'cod' ? 'paid' : order.paymentStatus;
   }
   await order.save();
+
+  // Fire-and-forget status notification (never blocks/fails the update)
+  const { sendOrderStatusUpdate } = require('./notificationService');
+  sendOrderStatusUpdate(order, newStatus).catch((err) =>
+    console.error('[OrderService] Status notification failed:', err.message)
+  );
+
   return order;
 };
 

@@ -1,5 +1,7 @@
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const Order = require('../models/Order');
+const { sendPaymentSuccess } = require('./notificationService');
 
 let _razorpay = null;
 
@@ -18,13 +20,18 @@ const getRazorpay = () => {
 };
 
 // Create a Razorpay order for a given amount (in rupees)
-const createRazorpayOrder = async (amountInRupees, receiptId) => {
+const createRazorpayOrder = async (amountInRupees, receiptId, notes = {}) => {
   const options = {
     amount: Math.round(amountInRupees * 100), // paise
     currency: 'INR',
     receipt: receiptId,
     payment_capture: 1
   };
+
+  // Notes let us map webhook events back to our internal order
+  if (Object.keys(notes).length > 0) {
+    options.notes = notes;
+  }
 
   const razorpayOrder = await getRazorpay().orders.create(options);
   return razorpayOrder;
@@ -50,4 +57,71 @@ const verifyWebhookSignature = (body, signature) => {
   return expectedSignature === signature;
 };
 
-module.exports = { getRazorpay, createRazorpayOrder, verifyPaymentSignature, verifyWebhookSignature };
+/**
+ * Handle a successful payment – verifies the checkout signature,
+ * marks the order as paid (idempotent), auto-confirms pending orders
+ * and fires notifications.
+ */
+const handleSuccessfulPayment = async ({
+  orderId,              // our MongoDB order _id
+  razorpay_order_id,
+  razorpay_payment_id,
+  razorpay_signature
+}) => {
+  const isValid = verifyPaymentSignature({
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature
+  });
+
+  if (!isValid) {
+    throw new Error('Invalid payment signature');
+  }
+
+  const order = await Order.findById(orderId);
+  if (!order) throw new Error('Order not found');
+
+  // Idempotency – don't process the same payment twice
+  if (order.paymentStatus === 'paid') {
+    return order;
+  }
+
+  // Ensure the Razorpay order actually belongs to this order
+  if (order.razorpayOrderId && order.razorpayOrderId !== razorpay_order_id) {
+    throw new Error('Payment does not match this order');
+  }
+
+  order.paymentStatus = 'paid';
+  order.paymentMethod = 'online';
+  order.razorpayPaymentId = razorpay_payment_id;
+  order.razorpaySignature = razorpay_signature;
+
+  // Auto-confirm the order once payment is received
+  if (order.status === 'pending') {
+    order.status = 'confirmed';
+    order.tracking.push({
+      status: 'confirmed',
+      note: 'Payment received – order confirmed',
+      timestamp: new Date()
+    });
+  } else {
+    order.tracking.push({ status: order.status, note: 'Payment received' });
+  }
+
+  await order.save();
+
+  // Fire-and-forget notification (never blocks/fails the payment flow)
+  sendPaymentSuccess(order).catch((err) =>
+    console.error('[PaymentService] Payment success notification failed:', err.message)
+  );
+
+  return order;
+};
+
+module.exports = {
+  getRazorpay,
+  createRazorpayOrder,
+  verifyPaymentSignature,
+  verifyWebhookSignature,
+  handleSuccessfulPayment
+};

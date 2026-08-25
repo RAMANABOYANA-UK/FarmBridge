@@ -31,7 +31,12 @@ router.post('/', protect, authorize('buyer'), async (req, res) => {
 // Update status (farmer or admin)
 router.patch('/:id/status', protect, async (req, res) => {
   try {
-    const order = await updateOrderStatus(req.params.id, req.body.status, req.body.note);
+    const order = await updateOrderStatus(
+      req.params.id,
+      req.body.status,
+      req.user._id,
+      req.body.note
+    );
 
     const io = req.app.get('io');
     if (io) {

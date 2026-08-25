@@ -34,6 +34,7 @@ const orderSchema = new mongoose.Schema(
       {
         status: String,
         note: String,
+        updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         timestamp: { type: Date, default: Date.now }
       }
     ],

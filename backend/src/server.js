@@ -37,6 +37,10 @@ app.set('io', io);
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000' }));
+
+// Raw body for Razorpay webhook signature verification – MUST be before express.json()
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 

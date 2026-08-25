@@ -71,9 +71,18 @@ const sendPaymentSuccessWhatsApp = async (phone, order) => {
   });
 };
 
+const sendOrderStatusWhatsApp = async (phone, order, statusText) => {
+  return sendWhatsAppTemplate({
+    to: phone,
+    templateName: 'order_status_update', // must be approved by Meta
+    params: [order.orderId || order._id.toString(), statusText]
+  });
+};
+
 module.exports = {
   sendWhatsAppTemplate,
   sendOtpWhatsApp,
   sendOrderConfirmationWhatsApp,
-  sendPaymentSuccessWhatsApp
+  sendPaymentSuccessWhatsApp,
+  sendOrderStatusWhatsApp
 };
