@@ -136,6 +136,16 @@ const translations = {
   gu: { ...base, welcome: 'સ્વાગત છે', farmers: 'ખેડૂતો', consumers: 'ગ્રાહકો', buyer: 'ખરીદદાર', farmer: 'ખેડૂત', login: 'લૉગિન', language: 'ભાષા', continue: 'ચાલુ રાખો' },
   pa: { ...base, welcome: 'ਸੁਆਗਤ ਹੈ', farmers: 'ਗੱਠੀ', consumers: 'ਗਾਹਕ', buyer: 'ਖਰੀਦਦਾਰ', farmer: 'ਕਿਸਾਨ', login: 'ਲੌਗਇਨ', language: 'ਭਾਸ਼ਾ', continue: 'ਜਾਰੀ ਰੱਖੋ' },
   or: { ...base, welcome: 'ସ୍ୱାଗତ', farmers: 'ଚାଷୀ', consumers: 'ଉପଭୋକ୍ତା', buyer: 'କିଣାଯାତ୍ରୀ', farmer: 'ଚାଷୀ', login: 'ଲଗଇନ', language: 'ଭାଷା', continue: 'ଆଗକୁ' },
+  as: { ...base, welcome: 'স্বাগতম', farmers: 'কৃষক', consumers: 'ভোক্তা', buyer: 'ক্ৰেতা', farmer: 'কৃষক', login: 'লগ ইন', language: 'ভাষা', continue: 'অগ্ৰসৰ হোৱক' },
+  ur: { ...base, welcome: 'خوش آمدید', farmers: 'کسان', consumers: 'صارفین', buyer: 'خریدار', farmer: 'کسان', login: 'لاگ ان', language: 'زبان', continue: 'جاری رکھیں' },
+  ks: { ...base, welcome: 'خوش آمدید', farmers: 'کٲشُر زٔمیندار', consumers: 'صارفین', buyer: 'خریدار', farmer: 'زٔمیندار', login: 'لاگ اِن', language: 'زَبان', continue: 'جوٗنٛتھ' },
+  sa: { ...base, welcome: 'स्वागतम्', farmers: 'कृषकाः', consumers: 'उपभोक्तारः', buyer: 'ग्राहकः', farmer: 'कृषकः', login: 'प्रवेशः', language: 'भाषा', continue: 'आगच्छतु' },
+  sd: { ...base, welcome: 'ڀليڪار', farmers: 'هاري', consumers: 'گراهڪ', buyer: 'خريددار', farmer: 'هاري', login: 'لاگ اِن', language: 'ٻولي', continue: 'اڳتي وڃو' },
+  mai: { ...base, welcome: 'स्वागत छी', farmers: 'किसान', consumers: 'उपभोक्ता', buyer: 'खरीदार', farmer: 'किसान', login: 'लॉगिन', language: 'भाषा', continue: 'आगू बढ़ू' },
+  kok: { ...base, welcome: 'येणें येवकार', farmers: 'शेतकारी', consumers: 'गिरायक', buyer: 'घेवपी', farmer: 'शेतकार', login: 'लॉगइन', language: 'भास', continue: 'फुडें वचात' },
+  doi: { ...base, welcome: 'स्वागत है', farmers: 'किसान', consumers: 'उपभोक्ता', buyer: 'ग्राहक', farmer: 'किसान', login: 'लॉगइन', language: 'भाषा', continue: 'अग्गे जाओ' },
+  mni: { ...base, welcome: 'অযথা', farmers: 'লৌ', consumers: 'য়েংলম্বা', buyer: 'য়ামবা', farmer: 'লৌনী', login: 'লগ ইন', language: 'লোন্', continue: 'মহাৎথোং' },
+  sat: { ...base, welcome: 'ᱥᱟᱨᱦᱟᱣ', farmers: 'ᱥᱟᱱᱛᱟᱲ', consumers: 'ᱯᱷᱟᱹᱛ', buyer: 'ᱠᱤᱸᱫᱤ', farmer: 'ᱦᱟᱹᱠᱩ', login: 'ᱞᱳᱜᱤᱱ', language: 'ᱯᱟᱹᱨᱥᱤ', continue: 'ᱡᱚᱛᱚ' },
 };
 
 export default translations;

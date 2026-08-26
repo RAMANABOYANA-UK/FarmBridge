@@ -1,19 +1,30 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Globe, Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import IndianFlag from './IndianFlag';
 
 const languages = [
   { code: 'en', name: 'English' },
   { code: 'hi', name: 'हिंदी' },
+  { code: 'bn', name: 'বাংলা' },
   { code: 'ta', name: 'தமிழ்' },
   { code: 'te', name: 'తెలుగు' },
-  { code: 'kn', name: 'ಕನ್ನಡ' },
-  { code: 'ml', name: 'മലയാളം' },
-  { code: 'bn', name: 'বাংলা' },
   { code: 'mr', name: 'मराठी' },
   { code: 'gu', name: 'ગુજરાતી' },
+  { code: 'kn', name: 'ಕನ್ನಡ' },
+  { code: 'ml', name: 'മലയാളം' },
   { code: 'pa', name: 'ਪੰਜਾਬੀ' },
-  { code: 'or', name: 'ଓଡ଼ିଆ' }
+  { code: 'or', name: 'ଓଡ଼ିଆ' },
+  { code: 'as', name: 'অসমীয়া' },
+  { code: 'ur', name: 'اردو' },
+  { code: 'ks', name: 'कॉशुर' },
+  { code: 'sa', name: 'संस्कृतम्' },
+  { code: 'sd', name: 'سنڌي' },
+  { code: 'mai', name: 'मैथिली' },
+  { code: 'kok', name: 'कोंकणी' },
+  { code: 'doi', name: 'डोगरी' },
+  { code: 'mni', name: 'মৈতৈলোন্' },
+  { code: 'sat', name: 'ᱥᱟᱱᱛᱟᱲᱤ' }
 ];
 
 const LanguageSwitcher = () => {
@@ -34,7 +45,9 @@ const LanguageSwitcher = () => {
         onClick={() => setOpen(!open)}
         className="flex items-center space-x-1 px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-700 hover:bg-green-50 transition-colors text-sm"
       >
-        <Globe className="h-4 w-4 text-green-600" />
+        <span className="w-4 h-4 flex-shrink-0 inline-block">
+          <IndianFlag variant="circle" className="w-full h-full" />
+        </span>
         <span>{current.name}</span>
         <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>

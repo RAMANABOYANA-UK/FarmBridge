@@ -1,66 +1,85 @@
 import React, { useState, useRef } from 'react';
 import { Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 
-const VoiceInputField = ({ onResult, language = 'en', placeholder = '', textarea = false, value: externalValue, onChange }) => {
+const VoiceInputField = ({ onResult, language = 'en', placeholder = '', textarea = false, value: externalValue, onChange, onEnter }) => {
   const [internalValue, setInternalValue] = useState('');
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const recognitionRef = useRef(null);
 
   const value = externalValue !== undefined ? externalValue : internalValue;
+  const isBrowser = typeof window !== 'undefined';
 
   const langMap = {
-    en:'en-IN', hi:'hi-IN', ta:'ta-IN', te:'te-IN', kn:'kn-IN',
-    ml:'ml-IN', bn:'bn-IN', mr:'mr-IN', gu:'gu-IN', pa:'pa-IN', or:'or-IN'
+    en:'en', hi:'hi', ta:'ta', te:'te', kn:'kn', ml:'ml', bn:'bn',
+    mr:'mr', gu:'gu', pa:'pa', or:'or', as:'as', ur:'ur', ks:'ks',
+    sa:'sa', sd:'sd', mai:'mai', kok:'kok', doi:'doi', mni:'mni', sat:'sat'
   };
 
   const toggleListening = () => {
+    if (!isBrowser) return;
     if (listening) {
-      recognitionRef.current?.stop();
+      try { recognitionRef.current?.stop(); } catch (e) {}
       setListening(false);
       return;
     }
-    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
       alert('Speech recognition not supported in this browser');
       return;
     }
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const rec = new SpeechRecognition();
-    rec.lang = langMap[language] || 'en-IN';
-    rec.continuous = false;
-    rec.interimResults = true;
-    rec.onstart = () => setListening(true);
-    rec.onend = () => setListening(false);
-    rec.onresult = (e) => {
-      const text = Array.from(e.results).map(r => r[0]).map(r => r.transcript).join('');
-      setInternalValue(text);
-      if (onChange) onChange(text);
-      if (onResult) onResult(text);
-    };
-    recognitionRef.current = rec;
-    rec.start();
+    try {
+      const rec = new SR();
+      rec.lang = langMap[language] || 'en';
+      rec.continuous = false;
+      rec.interimResults = true;
+      rec.onstart = () => setListening(true);
+      rec.onend = () => setListening(false);
+      rec.onresult = (e) => {
+        try {
+          const text = Array.from(e.results).map(r => r[0]).map(r => r.transcript).join('');
+          setInternalValue(text);
+          if (onChange) onChange(text);
+          if (onResult) onResult(text);
+        } catch (err) {}
+      };
+      recognitionRef.current = rec;
+      rec.start();
+    } catch (err) {
+      alert('Could not start voice input');
+    }
   };
 
   const toggleSpeak = () => {
+    if (!isBrowser) return;
     if (speaking) {
-      window.speechSynthesis?.cancel();
+      try { window.speechSynthesis?.cancel(); } catch (e) {}
       setSpeaking(false);
       return;
     }
     if (!value) return;
-    const utter = new SpeechSynthesisUtterance(String(value));
-    utter.lang = langMap[language] || 'en-IN';
-    utter.onend = () => setSpeaking(false);
-    utter.onerror = () => setSpeaking(false);
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utter);
-    setSpeaking(true);
+    try {
+      const utter = new SpeechSynthesisUtterance(String(value));
+      utter.lang = langMap[language] || 'en';
+      utter.onend = () => setSpeaking(false);
+      utter.onerror = () => setSpeaking(false);
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utter);
+      setSpeaking(true);
+    } catch (err) {}
   };
 
   const handleChange = (e) => {
     const v = e.target.value;
     setInternalValue(v);
     if (onChange) onChange(v);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && onEnter) {
+      e.preventDefault();
+      onEnter();
+    }
   };
 
   return (
@@ -70,6 +89,7 @@ const VoiceInputField = ({ onResult, language = 'en', placeholder = '', textarea
           <textarea
             value={value}
             onChange={handleChange}
+            onKeyDown={handleKeyDown}
             placeholder={placeholder}
             rows={3}
             className="w-full outline-none resize-none bg-transparent"
@@ -79,6 +99,7 @@ const VoiceInputField = ({ onResult, language = 'en', placeholder = '', textarea
             type="text"
             value={value}
             onChange={handleChange}
+            onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className="w-full outline-none bg-transparent"
           />

@@ -61,8 +61,30 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full">
+    <div className="relative min-h-screen">
+      {/* Full-page background image */}
+      <img
+        src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1920&q=80"
+        alt="Farm field at sunset"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70"></div>
+
+      <div className="relative z-10 min-h-screen flex flex-col">
+        <header className="px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-11 h-11 bg-green-500 rounded-xl flex items-center justify-center animate-bounce">
+              <Sprout className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight drop-shadow">FarmBridge</h1>
+              <p className="text-green-100 text-sm opacity-90">Farmer to Consumer • Made in India</p>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-grow flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
@@ -76,7 +98,7 @@ const LoginPage = () => {
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div>
           {step === 'phone' ? (
             <>
               {/* Phone Input */}
@@ -91,6 +113,7 @@ const LoginPage = () => {
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSendOtp(); } }}
                       placeholder="+91 98765 43210"
                       className="flex-grow outline-none"
                     />
@@ -133,6 +156,7 @@ const LoginPage = () => {
                       type="text"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleVerifyOtp(); } }}
                       placeholder="Enter OTP"
                       maxLength={6}
                       className="flex-grow outline-none"
@@ -177,8 +201,17 @@ const LoginPage = () => {
 
         {/* Helper Text */}
         <p className="text-center text-gray-500 text-sm mt-6">
-          {t('roleSelectionNote')}
+          {t('newToFarmBridge')}{' '}
+          <button onClick={() => navigate('/signup', { state: { role: selectedRole } })} className="text-green-600 font-medium hover:underline">
+            {t('createAccount')}
+          </button>
         </p>
+          </div>
+        </main>
+
+        <footer className="py-4 text-center text-white/80 text-sm">
+          Proudly connecting India's farmers & consumers 🌾 &nbsp;•&nbsp; @2026 Copyright
+        </footer>
       </div>
     </div>
   );

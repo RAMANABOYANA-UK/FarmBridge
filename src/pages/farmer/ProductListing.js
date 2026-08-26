@@ -8,6 +8,7 @@ import {
 import { toast } from 'react-toastify';
 import api from '../../services/api';
 import VoiceInputField from '../../components/VoiceInputField';
+import { getProductImage } from '../../utils/productImages';
 
 const ProductListing = () => {
   const navigate = useNavigate();
@@ -260,8 +261,13 @@ const ProductListing = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
               <div key={product._id} className="bg-white rounded-xl shadow overflow-hidden">
-                <div className="h-40 bg-gradient-to-br from-green-100 to-emerald-50 flex items-center justify-center text-6xl">
-                  {product.image || '🌾'}
+                <div className="h-40 bg-gradient-to-br from-green-100 to-emerald-50 flex items-center justify-center">
+                  <img
+                    src={getProductImage(product)}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://img.icons8.com/color/240/000000/vegetables.png'; }}
+                  />
                 </div>
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">

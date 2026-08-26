@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useCart } from '../../context/CartContext';
-import { ArrowLeft, ShoppingCart, Trash2, Plus, Minus, MapPin, CreditCard, CheckCircle } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Trash2, Plus, Minus, MapPin, CreditCard, CheckCircle, Loader } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const CartPage = () => {
@@ -12,28 +12,37 @@ const CartPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [deliveryAddress, setDeliveryAddress] = useState('MG Road, Bangalore - 560001');
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const subtotal = cartTotal;
   const deliveryFee = subtotal > 200 ? 0 : 30;
   const total = subtotal + deliveryFee;
 
   const handlePlaceOrder = () => {
-    setOrderPlaced(true);
-    clearCart();
-    toast.success(t('orderConfirmation'));
+    if (processing) return;
+    setProcessing(true);
+    toast.success('Processing payment...');
+    setTimeout(() => {
+      setProcessing(false);
+      setOrderPlaced(true);
+      clearCart();
+      toast.success(t('orderConfirmation'));
+    }, 2000);
+  };
+
+  const handleEnter = (e) => {
+    if (e.key === 'Enter' && cartItems.length > 0) handlePlaceOrder();
   };
 
   if (orderPlaced) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center animate-pulse">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="h-10 w-10 text-green-600" />
           </div>
           <h1 className="text-2xl font-bold mb-2">{t('orderConfirmation')}</h1>
-          <p className="text-gray-600 mb-6">
-            Order #FB-2026-004 has been placed successfully!
-          </p>
+          <p className="text-gray-600 mb-6">Order #FB-2026-004 has been placed successfully!</p>
           <div className="bg-gray-50 rounded-xl p-4 mb-6">
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">{t('total')}</span>
@@ -68,7 +77,7 @@ const CartPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" onKeyDown={handleEnter}>
       {/* Header */}
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="px-4 py-3 flex items-center justify-between">
@@ -83,7 +92,7 @@ const CartPage = () => {
           </div>
           <div className="flex items-center text-gray-600">
             <ShoppingCart className="h-5 w-5 mr-2" />
-            <span className="font-medium">{cartItems.length} items</span>
+            <span className="font-medium">{cartItems.length} {t('items')}</span>
           </div>
         </div>
       </div>
@@ -92,8 +101,8 @@ const CartPage = () => {
         {cartItems.length === 0 ? (
           <div className="text-center py-16">
             <ShoppingCart className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-700 mb-2">Your cart is empty</h3>
-            <p className="text-gray-500 mb-6">Add some fresh produce to get started</p>
+            <h3 className="text-xl font-bold text-gray-700 mb-2">{t('yourCartIsEmpty')}</h3>
+            <p className="text-gray-500 mb-6">{t('addSomeProduce')}</p>
             <button
               onClick={() => navigate('/buyer/products')}
               className="bg-orange-500 text-white px-6 py-3 rounded-xl hover:bg-orange-600"
@@ -153,12 +162,12 @@ const CartPage = () => {
                 <h2 className="text-lg font-bold mb-4">{t('orderSummary')}</h2>
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal</span>
+                    <span className="text-gray-600">{t('subtotal')}</span>
                     <span className="font-medium">₹{subtotal}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Delivery Fee</span>
-                    <span className="font-medium">{deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}</span>
+                    <span className="text-gray-600">{t('deliveryFee')}</span>
+                    <span className="font-medium">{deliveryFee === 0 ? t('free') : `₹${deliveryFee}`}</span>
                   </div>
                   <div className="border-t pt-2 flex justify-between">
                     <span className="font-bold">{t('total')}</span>
@@ -193,9 +202,9 @@ const CartPage = () => {
                         key={method}
                         onClick={() => setPaymentMethod(method)}
                         className={`
-                          w-full flex items-center justify-between p-3 rounded-xl border-2 transition-colors
+                          w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all duration-200
                           ${paymentMethod === method
-                            ? 'border-orange-500 bg-orange-50'
+                            ? 'border-orange-500 bg-orange-50 scale-[1.01]'
                             : 'border-gray-200 hover:border-orange-300'
                           }
                         `}
@@ -216,9 +225,17 @@ const CartPage = () => {
 
                 <button
                   onClick={handlePlaceOrder}
-                  className="w-full bg-orange-500 text-white py-3 rounded-xl hover:bg-orange-600 font-semibold"
+                  disabled={processing}
+                  className="w-full bg-orange-500 text-white py-3 rounded-xl hover:bg-orange-600 font-semibold flex items-center justify-center space-x-2 disabled:opacity-60"
                 >
-                  {t('placeOrder')} • ₹{total}
+                  {processing ? (
+                    <>
+                      <Loader className="h-5 w-5 animate-spin" />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <span>{t('placeOrder')} • ₹{total}</span>
+                  )}
                 </button>
               </div>
             </div>

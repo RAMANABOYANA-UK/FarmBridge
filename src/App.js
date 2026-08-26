@@ -13,6 +13,7 @@ import { CartProvider } from './context/CartContext';
 // Pages
 import WelcomePage from './pages/WelcomePage';
 import LoginPage from './pages/LoginPage';
+import SignUpPage from './pages/SignUpPage';
 import LanguageSelect from './pages/LanguageSelect';
 import RoleSelect from './pages/RoleSelect';
 import FarmerDashboard from './pages/farmer/Dashboard';
@@ -42,8 +43,10 @@ function App() {
             <CartProvider>
             <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
               <Routes>
-                <Route path="/" element={<WelcomePage />} />
+                <Route path="/" element={<LanguageSelect />} />
+                <Route path="/welcome" element={<WelcomePage />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignUpPage />} />
                 <Route path="/language" element={<LanguageSelect />} />
                 <Route path="/role" element={<RoleSelect />} />
                 

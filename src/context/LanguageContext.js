@@ -7,12 +7,13 @@ export const useLanguage = () => useContext(LanguageContext);
 
 // Map of supported languages to their speech locales used by both speech recognition and synthesis
 const LOCALE_MAP = {
-  en: 'en-IN', hi: 'hi-IN', ta: 'ta-IN', te: 'te-IN',
-  kn: 'kn-IN', ml: 'ml-IN', bn: 'bn-IN', mr: 'mr-IN',
-  gu: 'gu-IN', pa: 'pa-IN', or: 'or-IN'
+  en: 'en', hi: 'hi', ta: 'ta', te: 'te', kn: 'kn', ml: 'ml', bn: 'bn',
+  mr: 'mr', gu: 'gu', pa: 'pa', or: 'or', as: 'as', ur: 'ur', ks: 'ks',
+  sa: 'sa', sd: 'sd', mai: 'mai', kok: 'kok', doi: 'doi',
+  mni: 'mni', sat: 'sat'
 };
 
-export const getLocale = (lang) => LOCALE_MAP[lang] || 'en-IN';
+export const getLocale = (lang) => LOCALE_MAP[lang] || 'en';
 
 export const LanguageProvider = ({ children }) => {
   const [language, setLanguage] = useState('en');
@@ -38,8 +39,13 @@ export const LanguageProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem('farmbridge_language') || 'en';
-    if (translations[saved]) setLanguage(saved);
+    // Default to English on first load; only restore a saved language if it's not the initial visit
+    const saved = localStorage.getItem('farmbridge_language');
+    if (saved && translations[saved]) {
+      setLanguage(saved);
+    } else {
+      setLanguage('en');
+    }
   }, []);
 
   const value = useMemo(() => ({ language, t, setLanguage: changeLanguage, getLocale }), [language, t]);

@@ -10,6 +10,7 @@ import {
   Bot, Leaf, Clock, Filter
 } from 'lucide-react';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
+import { getProductImage } from '../../utils/productImages';
 
 const BuyerDashboard = () => {
   const navigate = useNavigate();
@@ -159,18 +160,28 @@ const BuyerDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="relative min-h-screen bg-gray-50">
+      {/* Full-page background image */}
+      <img
+        src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1920&q=50"
+        alt="Fresh produce background"
+        className="fixed inset-0 w-full h-full object-cover"
+      />
+      <div className="fixed inset-0 bg-gradient-to-b from-orange-900/30 via-white/70 to-orange-900/30"></div>
+
+      <div className="relative z-10">
       {/* Top Navigation */}
-      <div className="bg-white shadow-sm sticky top-0 z-10">
+      <div className="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-30">
         <div className="px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100"
+            className="p-2 rounded-lg hover:bg-gray-200"
+            title="Toggle menu"
           >
             <Menu className="h-6 w-6 text-gray-700" />
           </button>
           
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 text-gray-800">
             <LanguageSwitcher />
             <button
               onClick={() => navigate('/buyer/cart')}
@@ -209,14 +220,18 @@ const BuyerDashboard = () => {
         </div>
       </div>
 
-      <div className="flex">
-        {/* Sidebar Menu */}
-        <div className={`
-          fixed inset-y-0 left-0 z-20 w-64 bg-white shadow-lg transform transition-transform duration-300
+      <div className="flex min-h-screen">
+        {/* Mobile overlay when menu open */}
+        {isMenuOpen && (
+          <div className="fixed inset-0 z-15 bg-black/40 lg:hidden" onClick={() => setIsMenuOpen(false)}></div>
+        )}
+
+        {/* Sidebar Menu - toggles open/close on all screen sizes */}
+        <aside className={`
+          fixed inset-y-0 left-0 z-20 w-64 bg-white shadow-2xl transform transition-transform duration-300
           ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0 lg:static lg:block
         `}>
-          <div className="p-6 border-b">
+          <div className="p-6 border-b flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
                 <Package className="h-6 w-6 text-orange-600" />
@@ -226,6 +241,13 @@ const BuyerDashboard = () => {
                 <p className="text-sm text-gray-500">{t('buyerDashboard')}</p>
               </div>
             </div>
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              className="p-1 rounded-lg hover:bg-gray-200"
+              title="Close menu"
+            >
+              <Menu className="h-5 w-5 text-gray-500" />
+            </button>
           </div>
           
           <nav className="p-4">
@@ -246,14 +268,22 @@ const BuyerDashboard = () => {
               ))}
             </ul>
           </nav>
-        </div>
+        </aside>
 
         {/* Main Content */}
         <div className="flex-grow p-4 lg:p-6">
           {/* Welcome Banner */}
-          <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-6 mb-6 text-white">
-            <h2 className="text-2xl font-bold mb-2">Welcome back, {user?.name || 'Buyer'}! 🛒</h2>
-            <p className="opacity-90">Fresh produce from nearby farms, delivered to you</p>
+          <div className="relative rounded-2xl p-6 mb-6 text-white overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80"
+              alt="Fresh farm produce"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-900/80 to-amber-700/60"></div>
+            <div className="relative z-10">
+              <h2 className="text-2xl font-bold mb-2">Welcome back, {user?.name || 'Buyer'}! 🛒</h2>
+              <p className="opacity-90">Fresh produce from nearby farms, delivered to you</p>
+            </div>
           </div>
 
           {/* Search */}
@@ -294,8 +324,13 @@ const BuyerDashboard = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
               <div key={product._id} className="bg-white rounded-xl shadow overflow-hidden">
-                <div className="h-40 bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center text-6xl">
-                  {product.image}
+                <div className="h-40 bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center">
+                  <img
+                    src={getProductImage(product)}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://img.icons8.com/color/240/000000/vegetables.png'; }}
+                  />
                 </div>
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -347,9 +382,10 @@ const BuyerDashboard = () => {
                   </button>
                 </div>
               </div>
-            ))}
+              ))}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

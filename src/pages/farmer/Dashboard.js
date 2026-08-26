@@ -62,18 +62,39 @@ const FarmerDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="relative min-h-screen bg-gray-50">
+      {/* Full-page background image */}
+      <img
+        src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1920&q=50"
+        alt="Farm field background"
+        className="fixed inset-0 w-full h-full object-cover"
+      />
+      <div className="fixed inset-0 bg-gradient-to-b from-green-900/30 via-white/70 to-green-900/30"></div>
+
+      <div className="relative z-10">
       {/* Top Navigation */}
-      <div className="bg-white shadow-sm sticky top-0 z-10">
+      <div className="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-30">
         <div className="px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100"
-          >
-            <Menu className="h-6 w-6 text-gray-700" />
-          </button>
-          
           <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 rounded-lg hover:bg-gray-200"
+              title="Toggle menu"
+            >
+              <Menu className="h-6 w-6 text-gray-700" />
+            </button>
+            {/* Close overlay for mobile */}
+            {isMenuOpen && (
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="hidden lg:hidden p-1 rounded-lg hover:bg-gray-200"
+              >
+                <Menu className="h-5 w-5 text-gray-500" />
+              </button>
+            )}
+          </div>
+          
+          <div className="flex items-center space-x-3 text-gray-800">
             <LanguageSwitcher />
             <button className="p-2 rounded-lg hover:bg-gray-100 relative">
               <Bell className="h-6 w-6 text-gray-700" />
@@ -101,14 +122,18 @@ const FarmerDashboard = () => {
         </div>
       </div>
 
-      <div className="flex">
-        {/* Sidebar Menu */}
-        <div className={`
-          fixed inset-y-0 left-0 z-20 w-64 bg-white shadow-lg transform transition-transform duration-300
+      <div className="flex min-h-screen">
+        {/* Mobile overlay when menu open */}
+        {isMenuOpen && (
+          <div className="fixed inset-0 z-15 bg-black/40 lg:hidden" onClick={() => setIsMenuOpen(false)}></div>
+        )}
+
+        {/* Sidebar Menu - toggles open/close on all screen sizes */}
+        <aside className={`
+          fixed inset-y-0 left-0 z-20 w-64 bg-white shadow-2xl transform transition-transform duration-300
           ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0 lg:static lg:block
         `}>
-          <div className="p-6 border-b">
+          <div className="p-6 border-b flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                 <Package className="h-6 w-6 text-green-600" />
@@ -118,6 +143,13 @@ const FarmerDashboard = () => {
                 <p className="text-sm text-gray-500">{t('farmerDashboard')}</p>
               </div>
             </div>
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              className="p-1 rounded-lg hover:bg-gray-200"
+              title="Close menu"
+            >
+              <Menu className="h-5 w-5 text-gray-500" />
+            </button>
           </div>
           
           <nav className="p-4">
@@ -138,14 +170,22 @@ const FarmerDashboard = () => {
               ))}
             </ul>
           </nav>
-        </div>
+        </aside>
 
         {/* Main Content */}
         <div className="flex-grow p-4 lg:p-6">
           {/* Welcome Banner */}
-          <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 mb-6 text-white">
-            <h2 className="text-2xl font-bold mb-2">Welcome back, {user?.name || 'Farmer'}! 🌾</h2>
-            <p className="opacity-90">Here's what's happening with your farm today</p>
+          <div className="relative rounded-2xl p-6 mb-6 text-white overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80"
+              alt="Farm field"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-green-900/80 to-emerald-700/60"></div>
+            <div className="relative z-10">
+              <h2 className="text-2xl font-bold mb-2">Welcome back, {user?.name || 'Farmer'}! 🌾</h2>
+              <p className="opacity-90">Here's what's happening with your farm today</p>
+            </div>
           </div>
 
           {/* Stats Grid */}
@@ -361,6 +401,7 @@ const FarmerDashboard = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
