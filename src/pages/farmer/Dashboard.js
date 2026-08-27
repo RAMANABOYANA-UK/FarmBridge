@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useSocket, SOCKET_EVENTS } from '../../context/SocketContext';
 import { 
   Menu, User, Package, DollarSign, Star, 
   Bell, Plus, TrendingUp, Calendar, MapPin,
@@ -14,6 +15,7 @@ const FarmerDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { on, off } = useSocket();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [stats, setStats] = useState({
     pendingOrders: 3,
@@ -60,6 +62,30 @@ const FarmerDashboard = () => {
     { icon: MessageSquare, label: t('messages'), path: '/farmer/messages' },
     { icon: CreditCard, label: t('bankDetails'), path: '/farmer/bank' },
   ];
+
+  // Live streaming of incoming orders – prepend to the recent list & bump the
+  // pending counter without requiring a page refresh.
+  useEffect(() => {
+    const handleNewOrder = (order = {}) => {
+      const id = order?._id || Date.now();
+      setRecentOrders((prev) => [
+        {
+          _id: id,
+          orderId: order?.orderId || `FB-${Date.now()}`,
+          customerName: order?.buyer?.name || 'New Customer',
+          totalAmount: order?.totalAmount || 0,
+          status: order?.status || 'pending',
+          createdAt: order?.createdAt || new Date().toISOString(),
+          deliveryAddress: order?.deliveryAddress || {},
+        },
+        ...prev,
+      ]);
+      setStats((prev) => ({ ...prev, pendingOrders: prev.pendingOrders + 1 }));
+    };
+
+    on(SOCKET_EVENTS.NEW_ORDER, handleNewOrder);
+    return () => off(SOCKET_EVENTS.NEW_ORDER, handleNewOrder);
+  }, [on, off]);
 
   return (
     <div className="relative min-h-screen bg-gray-50">

@@ -43,6 +43,10 @@ router.patch('/:id/status', protect, async (req, res) => {
       io.to(`order_${order._id}`).emit('order_status', order);
       io.to(`farmer_${order.farmer}`).emit('order_status', order);
       io.to(`buyer_${order.buyer}`).emit('order_status', order);
+      // Canonical event name used by the frontend Socket context
+      io.to(`order_${order._id}`).emit('order_status_updated', order);
+      io.to(`farmer_${order.farmer}`).emit('order_status_updated', order);
+      io.to(`buyer_${order.buyer}`).emit('order_status_updated', order);
     }
 
     res.json(order);

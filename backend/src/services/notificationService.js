@@ -38,6 +38,19 @@ const sendOrderPlaced = async (order) => {
     tasks.push(safeSend(sendOrderConfirmationWhatsApp, buyer.phone, order));
   }
 
+  // Notify the farmer about the new order
+  const farmer = await User.findById(order.farmer).select('email phone name');
+  if (farmer?.email) {
+    tasks.push(
+      safeSend(
+        sendOrderStatusEmail,
+        farmer.email,
+        order,
+        `New order received (#${order.orderId || order._id})`
+      )
+    );
+  }
+
   await Promise.allSettled(tasks);
 };
 

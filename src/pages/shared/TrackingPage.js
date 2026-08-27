@@ -1,15 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
-import { ArrowLeft, MapPin, Truck, Package, CheckCircle, Clock } from 'lucide-react';
+import { useSocket, SOCKET_EVENTS } from '../../context/SocketContext';
+import { ArrowLeft, MapPin, Truck, Package, CheckCircle, Clock, Wifi, WifiOff } from 'lucide-react';
 
 const TrackingPage = () => {
   const navigate = useNavigate();
   const { orderId } = useParams();
   const { t } = useLanguage();
+  const { joinOrder, leaveOrder, on, off, isConnected } = useSocket();
   const [trackingStatus, setTrackingStatus] = useState('in_transit');
   const [currentLocation, setCurrentLocation] = useState('Koramangala, Bangalore');
   const [estimatedDelivery, setEstimatedDelivery] = useState('Today, 6:00 PM');
+
+  // Map backend order statuses onto the fixed timeline steps
+  const mapStatusToStep = (status) => {
+    if (status === 'delivered') return 'delivered';
+    if (status === 'in_transit' || status === 'out_for_delivery') return 'in_transit';
+    return 'confirmed'; // pending / confirmed / others
+  };
+
+  // Subscribe to live order updates for this specific order room
+  useEffect(() => {
+    joinOrder(orderId);
+
+    const handleStatusUpdate = (order = {}) => {
+      if (order?.status) {
+        setTrackingStatus(order.status);
+      }
+    };
+
+    on(SOCKET_EVENTS.ORDER_STATUS_UPDATED, handleStatusUpdate);
+    on(SOCKET_EVENTS.PAYMENT_RECEIVED, handleStatusUpdate);
+
+    return () => {
+      leaveOrder(orderId);
+      off(SOCKET_EVENTS.ORDER_STATUS_UPDATED, handleStatusUpdate);
+      off(SOCKET_EVENTS.PAYMENT_RECEIVED, handleStatusUpdate);
+    };
+  }, [orderId, joinOrder, leaveOrder, on, off]);
 
   const trackingSteps = [
     { id: 'confirmed', label: t('confirmed'), icon: CheckCircle, time: '10:30 AM' },
@@ -19,9 +48,9 @@ const TrackingPage = () => {
 
   const getStepStatus = (stepId) => {
     const order = ['confirmed', 'in_transit', 'delivered'];
-    const currentIndex = order.indexOf(trackingStatus);
+    const currentIndex = order.indexOf(mapStatusToStep(trackingStatus));
     const stepIndex = order.indexOf(stepId);
-    
+
     if (stepIndex < currentIndex) return 'completed';
     if (stepIndex === currentIndex) return 'current';
     return 'pending';
@@ -41,6 +70,15 @@ const TrackingPage = () => {
             </button>
             <h1 className="text-xl font-bold">{t('orderTracking')}</h1>
           </div>
+          {isConnected ? (
+            <span className="flex items-center text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+              <Wifi className="h-3 w-3 mr-1" /> Live
+            </span>
+          ) : (
+            <span className="flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+              <WifiOff className="h-3 w-3 mr-1" /> Offline
+            </span>
+          )}
         </div>
       </div>
 
@@ -52,8 +90,8 @@ const TrackingPage = () => {
               <h2 className="font-bold text-lg">Order #{orderId}</h2>
               <p className="text-sm text-gray-500">FB-2026-00{orderId}</p>
             </div>
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-              {t('in_transit')}
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium capitalize">
+              {trackingStatus.replace(/_/g, ' ')}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-4">

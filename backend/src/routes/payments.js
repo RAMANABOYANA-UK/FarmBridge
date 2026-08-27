@@ -44,10 +44,13 @@ router.post(
 
       res.json({
         success: true,
+        key: process.env.RAZORPAY_KEY_ID,
+        keyId: process.env.RAZORPAY_KEY_ID, // kept for existing frontend compatibility
         razorpayOrderId: razorpayOrder.id,
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
-        keyId: process.env.RAZORPAY_KEY_ID // frontend needs this to open checkout
+        farmbridgeOrderId: order._id,
+        orderId: order.orderId
       });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
@@ -83,6 +86,10 @@ router.post(
         io.to(`order_${order._id}`).emit('order_status', order);
         io.to(`farmer_${order.farmer}`).emit('payment_received', order);
         io.to(`buyer_${order.buyer}`).emit('payment_received', order);
+        // Canonical event name used by the frontend Socket context
+        io.to(`order_${order._id}`).emit('order_status_updated', order);
+        io.to(`farmer_${order.farmer}`).emit('order_status_updated', order);
+        io.to(`buyer_${order.buyer}`).emit('order_status_updated', order);
       }
 
       res.json({ success: true, message: 'Payment verified successfully', order });

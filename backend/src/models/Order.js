@@ -41,7 +41,9 @@ const orderSchema = new mongoose.Schema(
     razorpayOrderId: String,
     razorpayPaymentId: String,
     razorpaySignature: String,
-    deliveredAt: Date
+    deliveredAt: Date,
+    cancelledAt: Date,
+    cancelReason: String
   },
   { timestamps: true }
 );

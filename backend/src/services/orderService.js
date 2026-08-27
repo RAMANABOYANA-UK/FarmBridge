@@ -2,6 +2,16 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const generateOrderId = require('../utils/generateOrderId');
 
+// Valid status transitions – prevents invalid jumps (e.g. pending -> delivered)
+const ALLOWED_TRANSITIONS = {
+  pending: ['confirmed', 'cancelled'],
+  confirmed: ['ready_for_pickup', 'cancelled'],
+  ready_for_pickup: ['in_transit', 'cancelled'],
+  in_transit: ['delivered', 'cancelled'],
+  delivered: [],
+  cancelled: []
+};
+
 const createOrder = async ({ buyerId, farmerId, items, deliveryAddress, paymentMethod, tenantId }) => {
   let totalAmount = 0;
   const orderItems = [];
@@ -62,11 +72,20 @@ const updateOrderStatus = async (orderId, newStatus, updatedBy = null, note = ''
   const order = await Order.findById(orderId);
   if (!order) throw new Error('Order not found');
 
+  const allowed = ALLOWED_TRANSITIONS[order.status] || [];
+  if (!allowed.includes(newStatus)) {
+    throw new Error(`Cannot change status from ${order.status} to ${newStatus}`);
+  }
+
   order.status = newStatus;
   order.tracking.push({ status: newStatus, note, updatedBy, timestamp: new Date() });
   if (newStatus === 'delivered') {
     order.deliveredAt = new Date();
     order.paymentStatus = order.paymentMethod === 'cod' ? 'paid' : order.paymentStatus;
+  }
+  if (newStatus === 'cancelled') {
+    order.cancelledAt = new Date();
+    order.cancelReason = note || 'Cancelled';
   }
   await order.save();
 

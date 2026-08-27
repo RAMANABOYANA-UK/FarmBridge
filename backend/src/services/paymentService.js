@@ -93,6 +93,7 @@ const handleSuccessfulPayment = async ({
 
   order.paymentStatus = 'paid';
   order.paymentMethod = 'online';
+  order.razorpayOrderId = razorpay_order_id;
   order.razorpayPaymentId = razorpay_payment_id;
   order.razorpaySignature = razorpay_signature;
 

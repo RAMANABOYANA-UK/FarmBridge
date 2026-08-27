@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import { useSocket, SOCKET_EVENTS } from '../../context/SocketContext';
 import { ArrowLeft, ShoppingBag, MapPin, Calendar, DollarSign, Truck } from 'lucide-react';
 
 const OrderManagement = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { on, off } = useSocket();
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState('all');
 
@@ -51,6 +53,28 @@ const OrderManagement = () => {
       }
     ]);
   }, []);
+
+  // Live status updates from the socket – patch orders in place so the list
+  // reflects changes made elsewhere (e.g. by the buyer/admin) without a refresh.
+  useEffect(() => {
+    const handleStatusUpdate = (order = {}) => {
+      const id = order?._id || order?.orderId;
+      if (!id) return;
+      setOrders((prev) =>
+        prev.map((o) =>
+          o._id === id || o.orderId === id
+            ? { ...o, status: order?.status || o.status }
+            : o
+        )
+      );
+    };
+
+    on(SOCKET_EVENTS.ORDER_STATUS_UPDATED, handleStatusUpdate);
+
+    return () => {
+      off(SOCKET_EVENTS.ORDER_STATUS_UPDATED, handleStatusUpdate);
+    };
+  }, [on, off]);
 
   const filteredOrders = orders.filter(order => 
     filter === 'all' || order.status === filter
